@@ -1,38 +1,51 @@
-# VideoForge
+# Axiom Editor
 
-VideoForge is an offline-first, browser-native non-linear video editor designed for static hosting such as GitHub Pages. The current workspace follows the dense three-panel conventions of professional desktop NLEs while keeping the project dependency-free and local.
+Axiom Editor is a local-first, browser-native video editor designed to run entirely offline and deploy cleanly to GitHub Pages.
 
-## Run it
+## Core behavior
 
-Upload the contents of this folder to a GitHub Pages site. Open the site once while online so the service worker can cache the application shell. After that, the editor can be launched as a standalone PWA and project/media data remains local to the browser profile.
+- PWA installable from GitHub Pages
+- IndexedDB project library and local project metadata
+- OPFS-backed media copies when the browser exposes OPFS
+- No server upload or cloud project requirement
+- Multi-track video, audio, and dedicated text tracks
+- Timeline scrubbing with draggable playhead
+- Clip selection, move, trim, razor/cut, duplicate, copy, paste, and snapping
+- `Ctrl+B` cuts the clip at the playhead by default
+- `V` selection tool and `B` razor tool
+- Custom context menus across the editor
+- Persistent editor settings and configurable keybinds
+- Resizable workspace panels and timeline
+- Arrange Panels mode for dragging the main editor panels into a different order
+- Optional color scopes (off by default)
+- Context-sensitive Inspector sections
+- Color adjustments, chroma key, LUT import, keyframes, typography, audio controls, and effects
+- Local AI-assisted object cutout with directional motion tracking
+- Text-behind-object setup helper
+- Browser-native WebM export with local audio mixing
+- WebCodecs/WebGPU/WebGL2 capability detection with compatibility fallbacks
 
-For local development:
+## AI object cutout
 
-```bash
-python -m http.server 4173
-```
+Axiom's cutout tool is deliberately offline. It uses a local color-guided segmentation pass around a user-selected object color, an adjustable object range, edge softness, and a directional tracker. It is useful for compositing text behind a subject without uploading footage to a remote service.
 
-Then open `http://localhost:4173/`.
+It is an assisted local segmentation system, not a hosted cloud AI model. A future model-backed segmentation engine can plug into the same mask structure without changing the project format.
 
-## Workspace
+## GitHub Pages
 
-- Professional three-panel layout: Media / Program / Inspector
-- Dense transport and command bars with configurable keyboard shortcuts
-- Fully resizable Media / Viewer / Inspector / Timeline workspace with saved layout
-- Ctrl/⌘ + Wheel timeline zoom and Shift + Wheel horizontal timeline pan without browser zoom
-- Context-sensitive Inspector sections (video, audio, stills, and text only show relevant controls)
-- Persistent Editor Settings window for autosave, timeline behavior, playback, appearance, and keybinds
-- Media search, type filters, grid/list browser, drag/drop import
-- Multi-track video/audio/text timeline with snapping, trim handles, razor, keyframe markers and thumbnails/waveforms
-- Track mute, solo, lock, clip selection, frame stepping and loop playback
-- Inspector controls for timing, transform, opacity, color, keying, LUTs and typography
-- Histogram, waveform and vectorscope monitoring
-- Local IndexedDB metadata/project persistence plus OPFS asset copies when supported
-- Browser capability detection for WebCodecs, WebGPU and WebGL2
-- Local WebM rendering through MediaRecorder + Web Audio; no server upload
+Upload the contents of this directory to a repository and enable GitHub Pages from the branch/folder you use for deployment. All application URLs are relative, so sub-path deployments work.
 
-## Browser capability note
+Open the deployed app once while online so the service worker can cache the application shell. After that, the editor interface remains available offline from the installed PWA/browser cache.
 
-Browser APIs do not expose a universal native MP4/MOV/AAC encoder/muxer. VideoForge therefore uses browser-native WebM as its portable offline export baseline and detects WebCodecs for lower-level workflows where available. A deterministic MP4/MOV pipeline would require bundling a local codec/muxer implementation, typically through WASM.
+## Icons
 
-Exact hardware acceleration for H.264, HEVC, AV1, and VP9 depends on the browser, operating system, and GPU. VideoForge falls back to media elements when lower-level APIs are unavailable.
+The PWA uses:
+
+- `icons/icon-192.png`
+- `icons/icon-512.png`
+
+There are no duplicate icon files at the project root.
+
+## Browser APIs
+
+Axiom progressively detects and uses IndexedDB, OPFS, WebCodecs, WebGPU, WebGL2, MediaRecorder, Canvas 2D, and Web Audio when available. Browsers without the advanced APIs use compatibility fallbacks rather than requiring a server.
