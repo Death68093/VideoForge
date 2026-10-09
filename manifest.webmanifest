@@ -1,22 +1,22 @@
 {
-  "name": "Axiom Editor \u2014 Offline Video Editor",
-  "short_name": "Axiom Editor",
-  "description": "Professional browser-native offline video editor.",
-  "start_url": "./",
+  "name": "Axiom Editor",
+  "short_name": "Axiom",
+  "description": "A local-first browser video editor.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "background_color": "#101112",
+  "theme_color": "#101112",
   "orientation": "landscape",
-  "background_color": "#080a0d",
-  "theme_color": "#0b0d10",
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

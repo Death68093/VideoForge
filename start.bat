@@ -17,9 +17,3 @@ echo Python was not found.
 echo Install Python 3, then run this file again.
 pause
 
-
-
-
-
-
-

@@ -3,574 +3,206 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#07090d">
-  <meta name="description" content="Axiom Editor — professional offline video editor">
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
-  <title>Axiom Editor — Offline NLE</title>
+  <meta name="theme-color" content="#101112">
+  <meta name="description" content="Axiom Editor — a local-first browser video editor.">
+  <title>Axiom Editor</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="app" class="app editor-view">
-    <section id="dashboard" class="dashboard hidden" aria-label="Axiom Editor dashboard">
-      <div class="dashboard-top">
-        <div class="dashboard-brand">
-          <img src="./icons/icon-192.png" alt="Axiom Editor" class="dashboard-logo">
-          <div><div class="dashboard-kicker">AXIOM EDITOR</div><h1>Your videos</h1><p>Continue an edit or start something new. Everything stays on this device.</p></div>
-        </div>
-        <div class="dashboard-actions">
-          <button id="dashboardImportBtn" class="secondary-btn">Import media</button>
-          <button id="dashboardNewBtn" class="primary-btn">＋ New video</button>
-        </div>
+  <div class="app-frame">
+    <header class="topbar">
+      <button class="brand" id="brandHome" title="Project dashboard">
+        <span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 29 27H3L16 3Z"/><path d="m16 11 5.2 10H10.8L16 11Z" class="brand-cut"/></svg></span>
+        <span class="brand-copy"><strong>AXIOM</strong><small>EDITOR</small></span>
+      </button>
+      <nav class="menubar" aria-label="Application menu">
+        <button data-menu="fileMenu">File</button>
+        <button data-menu="editMenu">Edit</button>
+        <button data-menu="viewMenu">View</button>
+        <button data-menu="clipMenu">Clip</button>
+        <button data-menu="sequenceMenu">Sequence</button>
+        <button data-menu="aiMenu">AI tools</button>
+      </nav>
+      <div class="topbar-project">
+        <span class="save-dot" id="saveDot"></span>
+        <input id="projectName" aria-label="Project name" value="Untitled Project" maxlength="80">
+        <span class="project-meta" id="projectMeta">1080p · 30 FPS</span>
       </div>
-      <div class="dashboard-toolbar">
-        <div class="dashboard-search"><span>⌕</span><input id="dashboardSearch" type="search" placeholder="Search your videos…" autocomplete="off"></div>
-        <div class="dashboard-filter"><button class="dashboard-filter-btn active" data-dashboard-filter="recent">Recent</button><button class="dashboard-filter-btn" data-dashboard-filter="all">All videos</button></div>
-        <button id="dashboardSettingsBtn" class="icon-btn square" title="Editor settings">⚙</button>
-      </div>
-      <div id="dashboardGrid" class="dashboard-grid"></div>
-      <div id="dashboardEmpty" class="dashboard-empty hidden">
-        <div class="dashboard-empty-icon">＋</div><h2>No videos yet</h2><p>Create your first video and it will appear here automatically.</p><button id="dashboardEmptyNewBtn" class="primary-btn">Create a video</button>
-      </div>
-      <div class="dashboard-footer"><span>Offline project library</span><span id="dashboardStorage">IndexedDB</span></div>
-      <input id="dashboardImportInput" type="file" multiple accept="video/*,audio/*,image/*" hidden>
-    </section>
-    <header class="app-header">
-      <div class="menu-row">
-        <div class="brand-cluster">
-          <div class="vf-logo">AX</div>
-          <div class="brand-copy">
-            <div class="brand-name">Axiom Editor</div>
-            <div class="brand-version">Offline Video Editor</div>
-          </div>
-        </div>
-
-        <nav class="main-menu" aria-label="Application menu">
-          <button class="menu-item">File</button>
-          <button class="menu-item">Edit</button>
-          <button class="menu-item">Clip</button>
-          <button class="menu-item">Video</button>
-          <button class="menu-item">View</button>
-          <button class="menu-item">Window</button>
-          <button class="menu-item">Help</button>
-        </nav>
-
-        <div class="sequence-title">
-          <span class="sequence-dot"></span>
-          <span id="projectNameView">Untitled</span>
-          <span class="video-format" id="projectFormatView">1920×1080 · 30 fps</span>
-        </div>
-
-        <div class="header-actions">
-          <span class="status-pill"><i></i><span id="offlineBadge">Offline ready</span></span>
-          <span id="engineBadge" class="engine-pill">Canvas</span>
-          <button id="installBtn" class="ghost-btn hidden">Install App</button>
-          <button id="dashboardBtn" class="icon-btn" title="Video dashboard">⌂</button>
-          <button id="settingsBtn" class="icon-btn" title="Editor Settings">⚙</button>
-          <button id="saveProjectBtn" class="icon-btn" title="Save project (Ctrl+S)">Save</button>
-          <button id="exportBtn" class="primary-btn">Export</button>
-        </div>
-      </div>
-
-      <div class="command-row">
-        <div class="command-left">
-          <button id="newProjectBtn" class="command-btn">New</button>
-          <button id="openProjectBtn" class="command-btn">Open</button>
-          <div class="command-divider"></div>
-          <button id="undoBtn" class="icon-btn square" title="Undo">↶</button>
-          <button id="redoBtn" class="icon-btn square" title="Redo">↷</button>
-        </div>
-
-        <div class="transport-cluster">
-          <button id="stopBtn" class="transport-btn" title="Stop">■</button>
-          <button class="transport-btn" title="Previous frame" id="prevFrameBtn">◀</button>
-          <button id="playBtn" class="play-btn" title="Play / Pause">▶</button>
-          <button class="transport-btn" title="Next frame" id="nextFrameBtn">▶</button>
-          <button class="transport-btn" title="Loop" id="loopBtn">↻</button>
-          <div id="timecode" class="timecode">00:00:00:00</div>
-        </div>
-
-        <div class="command-right">
-          <span class="viewer-readout" id="selectionInfo">No selection</span>
-          <button class="command-btn" id="fullscreenBtn">Fullscreen</button>
-        </div>
+      <div class="topbar-actions">
+        <button class="icon-button" id="undoButton" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+        <button class="icon-button" id="redoButton" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
+        <button class="secondary-button" id="saveProjectButton">Save</button>
+        <button class="primary-button" id="exportButton"><span>Export</span><span aria-hidden="true">↗</span></button>
       </div>
     </header>
 
-    <main class="workspace">
-      <aside class="panel project-panel" id="projectPanel">
-        <div class="panel-header">
-          <div>
-            <div><div class="eyebrow">PROJECT</div><h2>Media</h2></div>
-          </div>
-          <div class="panel-head-actions"><button id="importBtn" class="accent-icon-btn" title="Import media">＋</button><button id="closeMediaPanelBtn" class="panel-close-btn" title="Hide Media panel">×</button></div>
-          <input id="assetInput" type="file" multiple accept="video/*,audio/*,image/*" hidden>
-        </div>
-
-        <div class="panel-mode-tabs">
-          <button class="panel-mode-tab active" data-panel="media">Media</button>
-          <button class="panel-mode-tab" data-panel="effects">Effects</button>
-          <button class="panel-mode-tab" data-panel="audio">Audio</button>
-        </div>
-
-        <div class="panel-toolbar">
-          <div class="search-box">
-            <span>⌕</span>
-            <input id="mediaSearch" type="search" placeholder="Search media…" autocomplete="off">
-          </div>
-          <div class="view-toggle">
-            <button class="view-toggle-btn active" data-view="grid">▦</button>
-            <button class="view-toggle-btn" data-view="list">☷</button>
+    <div class="dropdown-menu" id="dropdownMenu" hidden></div>
+    <main class="workspace" id="workspace">
+      <section class="panel media-panel" data-panel="media" id="mediaPanel">
+        <div class="panel-heading" draggable="false">
+          <div><span class="eyebrow">01 / PROJECT</span><h2>Media bin</h2></div>
+          <div class="panel-tools">
+            <button class="tiny-icon" id="mediaViewButton" title="Toggle list/grid view" aria-label="Toggle media view">▦</button>
+            <button class="tiny-icon panel-menu-button" data-panel-menu="media" title="Panel options">···</button>
           </div>
         </div>
-
-        <div class="bin-tabs">
-          <button class="bin-tab active">All Media</button>
-          <button class="bin-tab">Video</button>
-          <button class="bin-tab">Audio</button>
-          <button class="bin-tab">Stills</button>
+        <div class="media-toolbar">
+          <label class="search-box"><span aria-hidden="true">⌕</span><input id="mediaSearch" type="search" placeholder="Find media…" aria-label="Search media"></label>
+          <button class="small-icon-button" id="importMediaButton" title="Import files">＋</button>
+          <button class="small-icon-button" id="linkFolderButton" title="Link a folder">⌁</button>
+          <input id="mediaFileInput" type="file" multiple accept="video/*,audio/*,image/*,.webm,.mov,.mp4,.mkv,.wav,.mp3,.flac,.m4a,.aac,.ogg" hidden>
+          <input id="folderFileInput" type="file" webkitdirectory multiple hidden>
         </div>
-
-        <section id="mediaPanel" class="panel-content media-panel">
-          <div class="asset-toolbar">
-            <span id="assetCount">0 items</span>
-            <span id="storageView" class="muted">IndexedDB + OPFS</span>
-          </div>
-          <div id="assetGrid" class="asset-grid"></div>
-          <div id="assetEmpty" class="drop-card">
-            <div class="drop-icon">↥</div>
-            <strong>Import media</strong>
-            <span>Drop video, audio, or images here</span>
-            <button class="secondary-btn" onclick="document.getElementById('importBtn').click()">Browse Files</button>
-          </div>
-        </section>
-
-        <section id="effectsPanel" class="panel-content hidden effects-panel">
-          <div class="category-label">VIDEO EFFECTS</div>
-          <div class="effect-grid">
-            <button class="effect-card" data-effect="fade"><b>Fade</b><span>Opacity ramp</span></button>
-            <button class="effect-card" data-effect="dissolve"><b>Dissolve</b><span>Soft transition</span></button>
-            <button class="effect-card" data-effect="zoom"><b>Dynamic Zoom</b><span>Animated push</span></button>
-            <button class="effect-card" data-effect="film"><b>Film</b><span>Contrast + grain</span></button>
-            <button class="effect-card" data-effect="mono"><b>Monochrome</b><span>Black & white</span></button>
-            <button class="effect-card" data-effect="glitch"><b>Glitch</b><span>Digital distortion</span></button>
-            <button class="effect-card" data-effect="vignette"><b>Vignette</b><span>Edge falloff</span></button>
-            <button class="effect-card" data-effect="chroma"><b>Chroma Key</b><span>Green screen</span></button>
-          </div>
-          <div class="tip-card">Double-click an effect to apply it to the selected clip.</div>
-        </section>
-
-        <section id="audioPanel" class="panel-content hidden effects-panel">
-          <div class="category-label">MASTER AUDIO RACK</div>
-          <div class="rack-card">
-            <label><span>Low</span><input id="rackLow" type="range" min="-12" max="12" value="0"><output>0 dB</output></label>
-            <label><span>Mid</span><input id="rackMid" type="range" min="-12" max="12" value="0"><output>0 dB</output></label>
-            <label><span>High</span><input id="rackHigh" type="range" min="-12" max="12" value="0"><output>0 dB</output></label>
-            <label><span>Compressor</span><input id="rackComp" type="range" min="0" max="1" step="0.01" value="0.25"><output>25%</output></label>
-            <label><span>Reverb</span><input id="rackReverb" type="range" min="0" max="1" step="0.01" value="0"><output>0%</output></label>
-            <label class="switch-row"><span>Auto ducking</span><input id="rackDuck" type="checkbox"><span class="switch"></span></label>
-          </div>
-          <div class="tip-card">Playback and export use the local Web Audio graph. No audio is uploaded.</div>
-        </section>
-
-        <div class="panel-footer">
-          <span>Local project</span>
-          <span id="projectStorageFooter">IndexedDB</span>
+        <div class="bin-summary"><span id="assetCount">0 assets</span><span id="binStorageLabel">LOCAL WORKSPACE</span></div>
+        <div class="media-list" id="mediaList" aria-label="Media assets">
+          <div class="empty-state media-empty"><div class="empty-icon">＋</div><strong>Start with your footage</strong><p>Import video, audio, or images. Your media stays on this device.</p><button class="primary-button" id="emptyImportButton">Import media</button><span class="drop-hint">or drag files into this panel</span></div>
         </div>
-      </aside>
-
-      <div id="leftResizeHandle" class="workspace-resize-handle workspace-resize-left" role="separator" aria-label="Resize media panel"></div>
-
-      <section id="centerStage" class="center-stage">
-        <section id="viewerPanel" class="viewer-panel dockable-panel">
-          <div class="viewer-topline">
-            <div class="viewer-title"><span class="live-dot"></span>Preview</div><button id="closeViewerPanelBtn" class="panel-close-btn" title="Hide Preview panel">×</button>
-            <div class="viewer-controls">
-              <button id="gridBtn" class="viewer-btn active">Grid</button>
-              <select id="zoomSelect" class="viewer-select">
-                <option value="fit">Fit</option>
-                <option value="0.5">50%</option>
-                <option value="0.75">75%</option>
-                <option value="1">100%</option>
-                <option value="1.5">150%</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="viewer" class="viewer">
-            <canvas id="previewCanvas" width="1920" height="1080"></canvas>
-            <div class="safe-guides guide-v"></div>
-            <div class="safe-guides guide-h"></div>
-            <div id="viewerOverlay" class="viewer-overlay">
-              <div class="overlay-mark">AX</div>
-              <strong>Start your video</strong>
-              <span>Import media, then drag a clip onto the timeline.</span>
-            </div>
-          </div>
-
-          <div class="viewer-bottomline">
-            <div class="viewer-meta">
-              <span id="decoderStatus">Media Element</span>
-              <span>·</span>
-              <span id="gpuStatus">Canvas 2D</span>
-            </div>
-            <div class="viewer-actions">
-              <button class="viewer-btn" id="viewerSetInBtn">I</button>
-              <button class="viewer-btn" id="viewerSetOutBtn">O</button>
-              <button class="viewer-btn" id="viewerClearRangeBtn">Clear</button>
-            </div>
-          </div>
-        </section>
-
-        <section id="scopesPanel" class="scopes-panel dockable-panel hidden">
-          <div class="scope-panel-toolbar"><div><span class="eyebrow">VIEW</span><strong>Scopes</strong></div><button id="closeScopesPanelBtn" class="panel-close-btn" title="Hide Scopes panel">×</button></div>
-          <div class="scope-card scope-hist">
-            <div class="scope-header"><span>Histogram</span><small>LUMA</small></div>
-            <canvas id="histogramCanvas" width="320" height="120"></canvas>
-          </div>
-          <div class="scope-card scope-wave">
-            <div class="scope-header"><span>Waveform</span><small>IRE</small></div>
-            <canvas id="waveformCanvas" width="320" height="120"></canvas>
-          </div>
-          <div class="scope-card scope-vector">
-            <div class="scope-header"><span>Vectorscope</span><small>CHROMA</small></div>
-            <canvas id="vectorscopeCanvas" width="180" height="120"></canvas>
-          </div>
-          <div class="scope-card technical-card">
-            <div class="technical-row"><span>Storage</span><strong id="storageStatus">IndexedDB</strong></div>
-            <div class="technical-row"><span>Export</span><strong id="exportStatus">WebM</strong></div>
-            <div class="technical-row"><span>Project</span><strong id="projectFormatStatus">1080p / 30</strong></div>
-            <div class="technical-row"><span>Cache</span><strong class="good-text">Ready</strong></div>
-          </div>
-        </section>
+        <div class="panel-bottom"><span class="status-led"></span><span id="localStorageStatus">LOCAL-FIRST WORKSPACE</span><button class="text-button" id="storageDetailsButton">Storage details</button></div>
       </section>
 
-      <div id="rightResizeHandle" class="workspace-resize-handle workspace-resize-right" role="separator" aria-label="Resize inspector panel"></div>
-
-      <aside class="panel inspector-panel">
-        <div class="inspector-top">
-          <div>
-            <div class="eyebrow">EDIT</div>
-            <h2>Inspector</h2>
-          </div>
-          <button id="closeInspectorPanelBtn" class="panel-close-btn" title="Hide Inspector panel">×</button>
+      <section class="panel viewer-panel" data-panel="viewer" id="viewerPanel">
+        <div class="panel-heading viewer-heading">
+          <div><span class="eyebrow">02 / MONITOR</span><h2>Program viewer</h2></div>
+          <div class="viewer-heading-right"><span class="viewer-resolution" id="viewerResolution">1920 × 1080</span><button class="tiny-icon" id="fullscreenButton" title="Fullscreen viewer">⛶</button><button class="tiny-icon panel-menu-button" data-panel-menu="viewer" title="Panel options">···</button></div>
         </div>
-        <div class="inspector-tabs">
-          <button class="tab active" data-inspector="clip">Clip</button>
-          <button class="tab" data-inspector="project">Video</button>
+        <div class="viewer-stage-wrap">
+          <div class="preview-stage" id="previewStage">
+            <video id="previewVideo" playsinline preload="auto"></video>
+            <img id="previewImage" alt="Current still frame" hidden>
+            <div id="titleOverlay" class="title-overlay" hidden></div>
+            <div class="viewer-empty" id="viewerEmpty"><div class="viewfinder"><span></span><i></i></div><strong>Nothing on the timeline yet</strong><p>Drag a media item to the timeline or add a title.</p><button id="viewerImportButton" class="secondary-button">Import footage</button></div>
+            <div class="safe-area" id="safeArea" hidden><span></span></div>
+            <div class="viewer-corner viewer-corner-tl">AX / PROGRAM</div>
+            <div class="viewer-corner viewer-corner-br" id="viewerFrameLabel">FRAME 000000</div>
+          </div>
         </div>
+        <div class="viewer-transport">
+          <div class="transport-left"><button id="jumpStartButton" class="transport-button" title="Go to start">|◀</button><button id="stepBackButton" class="transport-button" title="Previous frame">◂</button><button id="playButton" class="play-button" title="Play / Pause (Space)">▶</button><button id="stepForwardButton" class="transport-button" title="Next frame">▸</button><button id="jumpEndButton" class="transport-button" title="Go to end">▶|</button></div>
+          <div class="time-display"><span id="playheadTime">00:00:00:00</span><span class="time-divider">/</span><span id="durationTime">00:00:00:00</span></div>
+          <div class="transport-right"><button class="tiny-toggle" id="safeAreaButton">Safe guides</button><button class="tiny-toggle" id="viewerFitButton">Fit ▾</button></div>
+        </div>
+      </section>
 
-        <section id="clipInspector" class="panel-content inspector-content">
-          <div class="inspector-empty" id="inspectorEmpty">
-            <div class="empty-glyph">⌁</div>
-            <strong>Select a clip</strong>
-            <span>Choose a clip on the timeline to expose transform, color, audio, and keyframe controls.</span>
+      <section class="panel inspector-panel" data-panel="inspector" id="inspectorPanel">
+        <div class="panel-heading">
+          <div><span class="eyebrow">03 / CONTROLS</span><h2>Inspector</h2></div>
+          <button class="tiny-icon panel-menu-button" data-panel-menu="inspector" title="Panel options">···</button>
+        </div>
+        <div class="inspector-tabs" role="tablist" aria-label="Inspector sections">
+          <button class="inspector-tab active" data-inspector-tab="properties">Properties</button>
+          <button class="inspector-tab" data-inspector-tab="effects">Effects</button>
+          <button class="inspector-tab" data-inspector-tab="color">Color</button>
+          <button class="inspector-tab" data-inspector-tab="audio">Audio</button>
+          <button class="inspector-tab" data-inspector-tab="scopes">Scopes</button>
+        </div>
+        <div class="inspector-content" id="inspectorContent"><div class="empty-inspector"><div class="property-glyph">◇</div><strong>Select a clip</strong><p>Clip transforms, timing, effects, color and audio controls will appear here.</p></div></div>
+      </section>
+
+      <section class="panel timeline-panel" data-panel="timeline" id="timelinePanel">
+        <div class="timeline-topline">
+          <div class="timeline-title"><span class="eyebrow">04 / EDIT</span><h2>Timeline</h2><span class="sequence-pill" id="sequenceLabel">SEQUENCE 01</span></div>
+          <div class="timeline-tools">
+            <div class="tool-group" aria-label="Edit tools">
+              <button class="tool-button active" data-tool="select" title="Selection tool (V)">↖ <span>Select</span></button>
+              <button class="tool-button" data-tool="cut" title="Razor tool (C)">⌁ <span>Razor</span></button>
+              <button class="tool-button" data-tool="ripple" title="Ripple trim tool">⇥ <span>Ripple</span></button>
+              <button class="tool-button" data-tool="slip" title="Slip tool">⇆ <span>Slip</span></button>
+              <button class="tool-button" data-tool="slide" title="Slide tool">↔ <span>Slide</span></button>
+              <button class="tool-button" data-tool="roll" title="Roll trim tool">◫ <span>Roll</span></button>
+            </div>
+            <span class="tool-divider"></span>
+            <button class="small-icon-button" id="addTitleButton" title="Add title clip">＋T</button>
+            <button class="small-icon-button" id="addAdjustmentButton" title="Add adjustment layer">＋Adj</button>
+            <button class="small-icon-button" id="addVideoTrackButton" title="Add video track">＋V</button><button class="small-icon-button" id="addAudioTrackButton" title="Add audio track">＋A</button>
+            <button class="tiny-toggle magnetic-toggle active" id="magneticButton" title="Toggle magnetic snapping">◈ Magnetic</button>
+            <button class="tiny-icon" id="markerButton" title="Add marker (M)">⚑</button>
+            <button class="tiny-icon" id="timelineSettingsButton" title="Timeline settings">⚙</button>
           </div>
-
-          <div id="inspectorBody" class="hidden">
-            <div class="selected-clip-card">
-              <div class="selected-clip-icon">▰</div>
-              <div class="selected-clip-copy">
-                <strong id="selectedClipName">Clip</strong>
-                <span id="selectedClipType" class="chip">Video</span>
-              </div>
-              <button class="icon-btn square" id="deleteBtn" title="Delete clip">⌫</button>
-            </div>
-
-            <div class="inspector-section" id="editInspectorSection">
-              <div class="section-label">EDIT</div>
-              <div class="property-grid two compact">
-                <label><span>Start</span><input id="propStart" type="number" step="0.01"></label>
-                <label><span>Duration</span><input id="propDuration" type="number" step="0.01" min="0.01"></label>
-                <label><span>Source In</span><input id="propSourceStart" type="number" step="0.01" min="0"></label>
-                <label><span>Speed</span><input id="propSpeed" type="number" step="0.01" min="0.05" value="1"></label>
-              </div>
-            </div>
-
-            <div class="inspector-section" id="transformInspectorSection">
-              <div class="section-label row-label"><span>TRANSFORM</span><button class="key-btn" data-key="transform">◇</button></div>
-              <div class="property-grid two compact">
-                <label><span>X</span><input id="propX" type="number" step="1"></label>
-                <label><span>Y</span><input id="propY" type="number" step="1"></label>
-                <label><span>Scale</span><input id="propScale" type="number" step="0.01" min="0.01"></label>
-                <label><span>Rotation</span><input id="propRotation" type="number" step="1"></label>
-              </div>
-              <div class="slider-field"><div><span>Opacity</span><output id="propOpacityOut">100%</output></div><div class="slider-line"><input id="propOpacity" type="range" min="0" max="1" step="0.01"></div></div>
-            </div>
-
-            <div class="inspector-section" id="colorInspectorSection">
-              <div class="section-label row-label"><span>COLOR</span><button id="resetColorBtn" class="small-link">Reset</button></div>
-              <div class="slider-field"><div><span>Brightness</span></div><input id="fxBrightness" type="range" min="-1" max="1" step="0.01"></div>
-              <div class="slider-field"><div><span>Contrast</span></div><input id="fxContrast" type="range" min="-1" max="1" step="0.01"></div>
-              <div class="slider-field"><div><span>Saturation</span></div><input id="fxSaturation" type="range" min="-1" max="1" step="0.01"></div>
-              <div class="slider-field"><div><span>Hue</span></div><input id="fxHue" type="range" min="-180" max="180" step="1"></div>
-              <div class="slider-field"><div><span>Blur</span></div><input id="fxBlur" type="range" min="0" max="24" step="0.5"></div>
-            </div>
-
-            <div class="inspector-section" id="keyLutInspectorSection">
-              <div class="section-label row-label"><span>KEY / LUT</span><button id="clearLutBtn" class="small-link">Clear LUT</button></div>
-              <div class="slider-field"><div><span>Key strength</span></div><input id="fxKeyStrength" type="range" min="0" max="1" step="0.01"></div>
-              <label class="color-field"><span>Key color</span><input id="fxKeyColor" type="color" value="#00ff00"></label>
-              <button id="loadLutBtn" class="secondary-btn full">Import .cube LUT</button>
-              <input id="lutInput" type="file" accept=".cube,text/plain" hidden>
-              <div id="lutName" class="file-note">No LUT loaded</div>
-            </div>
-
-            <div id="aiInspector" class="inspector-section hidden">
-              <div class="section-label">AI TOOLS</div>
-              <button id="aiCutoutBtn" class="secondary-btn full">✦ Object Cutout</button>
-              <div class="section-note">Create a local object mask that can move in a chosen direction. Ideal for putting titles behind a subject.</div>
-            </div>
-
-            <div id="audioInspector" class="inspector-section hidden">
-              <div class="section-label">AUDIO</div>
-              <div class="slider-field"><div><span>Volume</span><output id="propVolumeOut">100%</output></div><input id="propVolume" type="range" min="0" max="2" step="0.01" value="1"></div>
-              <div class="slider-field"><div><span>Pan</span><output id="propPanOut">Center</output></div><input id="propPan" type="range" min="-1" max="1" step="0.01" value="0"></div>
-              <div class="section-note">Audio clips use the local Web Audio graph for preview and export.</div>
-            </div>
-
-            <div id="textInspector" class="inspector-section hidden">
-              <div class="section-label">TYPOGRAPHY</div>
-              <textarea id="textContent" rows="3" placeholder="Title text"></textarea>
-              <div class="property-grid two compact">
-                <label><span>Size</span><input id="textSize" type="number" min="8" max="400" value="72"></label>
-                <label><span>Weight</span><select id="textWeight"><option value="400">400</option><option value="600">600</option><option value="700">700</option><option value="800">800</option></select></label>
-                <label><span>Fill</span><input id="textColor" type="color" value="#ffffff"></label>
-                <label><span>Stroke</span><input id="textStroke" type="color" value="#000000"></label>
-              </div>
-              <div class="slider-field"><div><span>Tracking</span></div><input id="textTracking" type="range" min="-10" max="30" step="1" value="0"></div>
-              <div class="slider-field"><div><span>Stroke width</span></div><input id="textStrokeWidth" type="range" min="0" max="20" step="1" value="0"></div>
-            </div>
-          </div>
-        </section>
-
-        <section id="projectInspector" class="panel-content hidden inspector-content">
-          <div class="inspector-section">
-            <div class="section-label">VIDEO</div>
-            <label class="field-stack"><span>Name</span><input id="projectNameInput" type="text" value="Untitled"></label>
-            <div class="property-grid two compact">
-              <label><span>Width</span><input id="projectWidth" type="number" value="1920"></label>
-              <label><span>Height</span><input id="projectHeight" type="number" value="1080"></label>
-              <label><span>FPS</span><input id="projectFps" type="number" min="1" max="120" value="30"></label>
-              <label><span>Pixel Ratio</span><input id="projectPixelRatio" type="number" min="0.25" max="2" step="0.25" value="1"></label>
-            </div>
-            <button id="applyProjectBtn" class="primary-btn full">Apply Video Settings</button>
-          </div>
-          <div class="inspector-section">
-            <div class="section-label">TRACKS</div>
-            <button id="addVideoTrackBtn" class="secondary-btn full">＋ Video Track</button>
-            <button id="addTextTrackBtn" class="secondary-btn full">＋ Text Track</button>
-            <button id="addAudioTrackBtn" class="secondary-btn full">＋ Audio Track</button>
-            <button id="addTextClipBtn" class="secondary-btn full">＋ Text at Playhead</button>
-          </div>
-        </section>
-
-        <div class="panel-footer inspector-footer"><span>Axiom Editor</span><span>v2 workspace</span></div>
-      </aside>
+        </div>
+        <div class="timeline-subbar">
+          <div class="timeline-tools-left"><span id="selectedClipLabel">No clip selected</span><span class="vertical-separator"></span><span id="timelineStatus">Ready to edit</span></div>
+          <div class="timeline-zoom"><button class="tiny-icon" id="zoomOutButton" title="Zoom out">−</button><input id="timelineZoom" type="range" min="24" max="180" value="76" aria-label="Timeline zoom"><button class="tiny-icon" id="zoomInButton" title="Zoom in">＋</button><span id="zoomLabel">76 px/s</span></div>
+        </div>
+        <div class="timeline-scroll" id="timelineScroll" tabindex="0" aria-label="Editable timeline">
+          <div class="timeline-ruler" id="timelineRuler"><div class="ruler-label">TIME / FPS</div><div class="ruler-content" id="rulerContent"></div></div>
+          <div class="timeline-lanes" id="timelineLanes"></div>
+          <div class="playhead-line" id="playheadLine"><div class="playhead-cap"></div><div class="playhead-stem"></div></div>
+        </div>
+        <div class="timeline-footer"><span><kbd>Space</kbd> play/pause</span><span><kbd>V</kbd> select</span><span><kbd>C</kbd> cut</span><span><kbd>Ctrl</kbd> + <kbd>Z</kbd> undo</span><span id="timelineFooterRight">SNAP: ON · FRAME ACCURATE VIDEO</span></div>
+      </section>
     </main>
+    <footer class="statusbar"><div><span class="status-led"></span><span id="appStatus">Ready</span></div><div class="statusbar-center" id="capabilitySummary">LOCAL MEDIA · AUTO-SAVE ENABLED</div><div class="statusbar-right"><span id="saveStatus">All changes saved</span><button id="settingsButton" class="text-button">Settings</button></div></footer>
+  </div>
 
-    <section id="timelinePanel" class="timeline-panel">
-      <div id="timelineResizeHandle" class="timeline-resize-handle" role="separator" aria-label="Resize timeline"></div>
-      <div class="timeline-titlebar">
-        <div class="timeline-tools"><button id="closeTimelinePanelBtn" class="panel-close-btn" title="Hide Timeline panel">×</button>
-          <div class="tool-switch">
-            <button id="selectToolBtn" class="tool-switch-btn active" title="Selection tool">V</button>
-            <button id="razorToolBtn" class="tool-switch-btn" title="Razor tool">B</button>
-          </div>
-          <button id="snappingBtn" class="timeline-btn active">Snap</button>
-          <div class="timeline-divider"></div>
-          <button id="zoomOutBtn" class="timeline-btn">−</button>
-          <span id="timelineZoomLabel" class="zoom-label">100%</span>
-          <button id="zoomInBtn" class="timeline-btn">＋</button>
-          <span class="timeline-dimension">Timeline</span>
-          <span class="timeline-gesture-hint">⌘/Ctrl + Wheel zoom · Shift + Wheel pan</span>
-        </div>
-        <div class="timeline-range-actions">
-          <button id="setInBtn" class="timeline-btn">Mark In</button>
-          <button id="setOutBtn" class="timeline-btn">Mark Out</button>
-          <button id="clearRangeBtn" class="timeline-btn">Clear</button>
-        </div>
+  <div class="modal-backdrop" id="aiModal" hidden>
+    <section class="modal ai-modal" role="dialog" aria-modal="true" aria-labelledby="aiModalTitle">
+      <div class="modal-brand"><span class="brand-mark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 29 27H3L16 3Z"/><path d="m16 11 5.2 10H10.8L16 11Z" class="brand-cut"/></svg></span><span>AXIOM / OPTIONAL ADD-ONS</span></div>
+      <div class="modal-kicker">YOUR WORKSPACE, YOUR CHOICE</div>
+      <h1 id="aiModalTitle">Set up optional AI tools</h1>
+      <p class="modal-lead">Axiom's editor works without AI. Choose whether to download the local transcription model now, or keep setup for later. Nothing is installed or downloaded without your action.</p>
+      <div class="ai-options">
+        <div class="ai-option"><div class="ai-option-icon">Aa</div><div class="ai-option-copy"><strong>Local transcription</strong><p>Whisper Tiny · transcribe audio into text markers using your device. Initial setup downloads the model and runtime; later runs can use the browser cache.</p><span class="feature-chip" id="whisperInstallState">NOT INSTALLED · INTERNET REQUIRED TO SET UP</span></div><label class="switch"><input id="installWhisperCheckbox" type="checkbox"><span></span></label></div>
+        <div class="ai-option"><div class="ai-option-icon">◫</div><div class="ai-option-copy"><strong>Scene cut analysis</strong><p>Local frame-difference analysis detects likely cuts without an AI model or network connection.</p><span class="feature-chip ready-chip">AVAILABLE OFFLINE · NO DOWNLOAD</span></div><span class="included-check">✓</span></div>
       </div>
-
-      <div id="timelineScroller" class="timeline-scroller">
-        <div id="trackHeaderColumn" class="track-header-column"></div>
-        <div id="timelineCanvasWrap" class="timeline-canvas-wrap">
-          <canvas id="timelineCanvas" height="420"></canvas>
-        </div>
-      </div>
+      <div class="ai-progress" id="aiProgress" hidden><div class="progress-track"><span id="aiProgressBar"></span></div><div id="aiProgressText">Preparing local model…</div></div>
+      <div class="modal-note"><span class="note-icon">ⓘ</span><span>Media and projects remain local. The optional transcription setup fetches its model from the configured model host. If you skip it, transcription stays unavailable until you install it later from <b>AI tools</b>.</span></div>
+      <div class="modal-actions"><button class="text-button" id="aiNotNowButton">Not now</button><button class="secondary-button" id="aiOfflineButton">Continue without AI</button><button class="primary-button" id="installAIButton">Install selected tools <span>↗</span></button></div>
     </section>
-
-    <div id="toastStack" class="toast-stack"></div>
-    <div id="dropOverlay" class="drop-overlay hidden">
-      <div class="drop-overlay-card"><strong>Drop media into Axiom Editor</strong><span>Video, audio, and images stay on this device.</span></div>
-    </div>
   </div>
 
-  <dialog id="newProjectDialog" class="vf-dialog">
-    <form method="dialog" id="newProjectForm">
-      <div class="dialog-kicker">NEW VIDEO</div>
-      <h2>Create a video</h2>
-      <p>Choose your video format once. You can mix media later on the timeline.</p>
-      <label>Project name <input id="newProjectName" value="Untitled"></label>
-      <div class="property-grid two compact">
-        <label>Width <input id="newProjectWidth" type="number" value="1920"></label>
-        <label>Height <input id="newProjectHeight" type="number" value="1080"></label>
-        <label>FPS <input id="newProjectFps" type="number" value="30"></label>
-        <label>Duration <input id="newProjectDuration" type="number" value="30" step="0.1"></label>
+  <div class="modal-backdrop" id="exportModal" hidden>
+    <section class="modal export-modal" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+      <div class="modal-toprow"><div><div class="modal-kicker">DELIVERY / RENDER QUEUE</div><h1 id="exportTitle">Export sequence</h1><p class="modal-lead">Render your current timeline locally in this browser. Encoding formats depend on the browser's MediaRecorder support.</p></div><button class="tiny-icon modal-close" data-close-modal="exportModal" aria-label="Close">×</button></div>
+      <div class="export-grid">
+        <label class="form-field"><span>File name</span><input id="exportFileName" value="axiom-export" maxlength="100"></label>
+        <label class="form-field"><span>Container / codec</span><select id="exportFormat"><option value="auto">Best supported WebM</option><option value="vp9">WebM / VP9</option><option value="vp8">WebM / VP8</option><option value="h264">MP4 / H.264 (if supported)</option></select></label>
+        <label class="form-field"><span>Output size</span><select id="exportSize"><option value="sequence">Sequence dimensions</option><option value="1920x1080">1920 × 1080</option><option value="1280x720">1280 × 720</option><option value="1080x1920">1080 × 1920 (vertical)</option></select></label>
+        <label class="form-field"><span>Frame rate</span><select id="exportFps"><option value="sequence">Sequence FPS</option><option value="24">24 FPS</option><option value="30">30 FPS</option><option value="60">60 FPS</option></select></label>
       </div>
-      <div class="preset-row">
-        <button type="button" class="preset-btn" data-preset="1920x1080x30">1080p 30</button>
-        <button type="button" class="preset-btn" data-preset="1920x1080x60">1080p 60</button>
-        <button type="button" class="preset-btn" data-preset="3840x2160x30">4K 30</button>
-      </div>
-      <div class="dialog-actions">
-        <button type="button" id="createProjectCancel" class="secondary-btn">Cancel</button>
-        <button id="createProjectConfirm" value="default" class="primary-btn">Create Video</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="exportDialog" class="vf-dialog">
-    <form method="dialog" id="exportForm">
-      <div class="dialog-kicker">DELIVERY</div>
-      <h2>Render & Export</h2>
-      <p>Render the current video locally. Your source files never leave the browser.</p>
-      <div class="property-grid two compact">
-        <label>Format <select id="exportFormat"><option value="webm-vp9">WebM · VP9 + Opus</option><option value="webm-vp8">WebM · VP8 + Opus</option></select></label>
-        <label>Resolution <select id="exportResolution"><option value="project">Project</option><option value="1920x1080">1920×1080</option><option value="1280x720">1280×720</option><option value="3840x2160">3840×2160</option></select></label>
-        <label>FPS <input id="exportFps" type="number" min="1" max="120" value="30"></label>
-        <label>Video bitrate <input id="exportBitrate" type="number" min="250" value="8000"></label>
-      </div>
-      <label class="check-row"><input id="exportRangeOnly" type="checkbox"><span>Export marked In / Out range only</span></label>
-      <div id="exportProgress" class="export-progress hidden"><div class="progress-track"><div id="exportProgressBar" class="progress-bar"></div></div><span id="exportProgressText">0%</span></div>
-      <div class="dialog-actions">
-        <button id="exportCancelBtn" type="button" class="secondary-btn">Close</button>
-        <button id="exportStartBtn" type="button" class="primary-btn">Render Export</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="settingsDialog" class="vf-dialog settings-dialog">
-    <div class="settings-shell">
-      <div class="settings-head">
-        <div>
-          <div class="dialog-kicker">AXIOM EDITOR SETTINGS</div>
-          <h2>Editor Preferences</h2>
-          <p>Configure the workspace, panel layout, timeline behavior, appearance, playback, and keybinds. Preferences stay on this device.</p>
-        </div>
-        <button id="settingsCloseBtn" class="icon-btn square" title="Close settings">×</button>
-      </div>
-      <div class="settings-body">
-        <nav class="settings-nav" aria-label="Settings sections">
-          <button class="settings-nav-btn active" data-settings-section="general">General</button>
-          <button class="settings-nav-btn" data-settings-section="workspace">Workspace</button>
-          <button class="settings-nav-btn" data-settings-section="timeline">Timeline</button>
-          <button class="settings-nav-btn" data-settings-section="playback">Playback</button>
-          <button class="settings-nav-btn" data-settings-section="appearance">Appearance</button>
-          <button class="settings-nav-btn" data-settings-section="keybinds">Keybinds</button>
-        </nav>
-        <div class="settings-content">
-          <section class="settings-section active" data-settings-panel="general">
-            <div class="settings-section-title">General</div>
-            <div class="settings-card">
-              <label class="settings-row"><span><b>Autosave</b><small>Keep project changes saved locally.</small></span><input id="settingAutosave" type="checkbox" checked><span class="switch"></span></label>
-              <label class="settings-row"><span><b>Autosave interval</b><small>How frequently Axiom Editor writes the project.</small></span><select id="settingAutosaveInterval"><option value="1">1 second</option><option value="3" selected>3 seconds</option><option value="5">5 seconds</option><option value="10">10 seconds</option></select></label>
-              <label class="settings-row"><span><b>Confirm delete</b><small>Ask before deleting clips or tracks.</small></span><input id="settingConfirmDelete" type="checkbox"><span class="switch"></span></label>
-              <label class="settings-row"><span><b>Show scopes</b><small>Keep color scopes visible.</small></span><input id="settingShowScopes" type="checkbox"><span class="switch"></span></label>
-              <label class="settings-row"><span><b>Reduce motion</b><small>Reduce UI animations and hover movement.</small></span><input id="settingReduceMotion" type="checkbox"><span class="switch"></span></label>
-            </div>
-          </section>
-
-          <section class="settings-section" data-settings-panel="workspace">
-            <div class="settings-section-title">Workspace</div>
-            <div class="settings-card workspace-settings-card">
-              <div class="workspace-settings-intro"><b>Panels</b><small>Hide panels you do not use. Turn on Arrange panels to move the actual editor panels with the mouse.</small></div>
-              <div id="workspacePanelList" class="workspace-panel-list"></div>
-              <div class="workspace-settings-actions"><button id="arrangePanelsBtn" class="secondary-btn">Arrange panels</button><button id="restorePanelLayoutBtn" class="secondary-btn">Restore default layout</button><button id="showAllPanelsBtn" class="secondary-btn">Show all panels</button></div>
-              <div id="arrangeModeStatus" class="arrange-mode-status hidden">Arrange mode is active. Drag panel headers to swap their dock positions, then click Done.</div>
-              <div class="workspace-dock-settings">
-                <label class="settings-row"><span><b>Timeline dock</b><small>Choose whether the timeline lives above or below the workspace.</small></span><select id="settingTimelineDock"><option value="bottom">Bottom</option><option value="top">Top</option></select></label>
-                <label class="settings-row"><span><b>Scopes position</b><small>Choose where optional scopes sit relative to the preview.</small></span><select id="settingScopesPosition"><option value="bottom">Below Preview</option><option value="top">Above Preview</option></select></label>
-              </div>
-            </div>
-            <div class="settings-card"><div class="settings-shortcut-strip"><span>Tip</span><b>Panel headers have a × button</b><small>Use Window → Workspace to bring hidden panels back.</small></div></div>
-          </section>
-
-          <section class="settings-section" data-settings-panel="timeline">
-            <div class="settings-section-title">Timeline</div>
-            <div class="settings-card">
-              <label class="settings-row"><span><b>Default timeline zoom</b><small>Zoom used when opening a project.</small></span><select id="settingTimelineZoom"><option value="50">50%</option><option value="75">75%</option><option value="100" selected>100%</option><option value="125">125%</option><option value="150">150%</option></select></label>
-              <label class="settings-row"><span><b>Track height</b><small>Height of each video/audio lane.</small></span><select id="settingTrackHeight"><option value="48">Compact</option><option value="60" selected>Normal</option><option value="76">Large</option><option value="92">Huge</option></select></label>
-              <label class="settings-row"><span><b>Snapping</b><small>Snap edits to clip edges and playhead.</small></span><input id="settingSnap" type="checkbox" checked><span class="switch"></span></label>
-              <label class="settings-row"><span><b>Follow playhead</b><small>Automatically keep the playhead visible during playback.</small></span><input id="settingFollowPlayhead" type="checkbox"><span class="switch"></span></label>
-              <label class="settings-row"><span><b>Shift + Wheel pans timeline</b><small>Use Shift + Wheel instead of vertical scrolling to move horizontally.</small></span><input id="settingShiftPan" type="checkbox" checked><span class="switch"></span></label>
-            </div>
-          </section>
-
-          <section class="settings-section" data-settings-panel="playback">
-            <div class="settings-section-title">Playback</div>
-            <div class="settings-card">
-              <label class="settings-row"><span><b>Loop playback</b><small>Repeat the marked range or video.</small></span><input id="settingLoop" type="checkbox"><span class="switch"></span></label>
-              <label class="settings-row"><span><b>Frame step amount</b><small>Arrow key movement.</small></span><select id="settingFrameStep"><option value="1" selected>1 frame</option><option value="2">2 frames</option><option value="5">5 frames</option><option value="10">10 frames</option></select></label>
-              <div class="settings-info">Playback uses native browser media decoding and automatically upgrades to WebCodecs/WebGPU capabilities when available.</div>
-            </div>
-          </section>
-
-          <section class="settings-section" data-settings-panel="appearance">
-            <div class="settings-section-title">Appearance</div>
-            <div class="settings-card">
-              <label class="settings-row"><span><b>Accent color</b><small>Editor highlight and selection color.</small></span><input id="settingAccent" type="color" value="#d9ff5f"></label>
-              <label class="settings-row"><span><b>Default panel widths</b><small>Restore the current workspace layout.</small></span><button id="resetWorkspaceBtn" class="secondary-btn">Reset layout</button></label>
-              <div class="settings-shortcut-strip"><span>Tip</span><b>Drag the thin separators</b><small>between Media, Viewer, Inspector, and Timeline.</small></div>
-            </div>
-          </section>
-
-          <section class="settings-section" data-settings-panel="keybinds">
-            <div class="settings-section-title">Keybinds</div>
-            <div class="keybind-toolbar"><span id="keybindStatus">Click a binding, then press the new shortcut.</span><button id="resetKeybindsBtn" class="secondary-btn">Reset defaults</button></div>
-            <div id="keybindList" class="keybind-list"></div>
-          </section>
-        </div>
-      </div>
-      <div class="settings-foot">
-        <span id="settingsSaveStatus">Changes apply immediately.</span>
-        <button id="settingsDoneBtn" class="primary-btn">Done</button>
-      </div>
-    </div>
-  </dialog>
-
-  <dialog id="aiCutoutDialog" class="vf-dialog ai-cutout-dialog">
-    <div class="ai-cutout-shell">
-      <div class="ai-cutout-head">
-        <div><div class="dialog-kicker">LOCAL AI-ASSISTED CUTOUT</div><h2>Object Cutout</h2><p>Pick the object in the frame. The cutout is computed locally and can follow a direction over time.</p></div>
-        <button id="aiCutoutCloseBtn" class="icon-btn square" title="Close">×</button>
-      </div>
-      <div class="ai-cutout-body">
-        <div class="ai-cutout-stage"><canvas id="aiCutoutCanvas" width="960" height="540"></canvas><div id="aiCutoutPickBadge" class="ai-pick-badge hidden">Click the object to sample it</div></div>
-        <aside class="ai-cutout-controls">
-          <button id="aiPickObjectBtn" class="primary-btn full">Pick object</button>
-          <div id="aiSampleStatus" class="ai-sample-status">No object sampled.</div>
-          <label class="ai-control"><span>Object range</span><input id="aiCutoutRadius" type="range" min="5" max="100" value="36"><output>36%</output></label>
-          <label class="ai-control"><span>Color tolerance</span><input id="aiCutoutTolerance" type="range" min="1" max="100" value="26"><output>26%</output></label>
-          <label class="ai-control"><span>Edge softness</span><input id="aiCutoutFeather" type="range" min="0" max="30" value="6"><output>6px</output></label>
-          <label class="ai-control"><span>Motion direction</span><select id="aiCutoutDirection"><option value="static">Static</option><option value="left">Left</option><option value="right">Right</option><option value="up">Up</option><option value="down">Down</option><option value="up-left">Up / Left</option><option value="up-right">Up / Right</option><option value="down-left">Down / Left</option><option value="down-right">Down / Right</option></select></label>
-          <label class="ai-control"><span>Motion speed</span><input id="aiCutoutSpeed" type="range" min="0" max="500" value="70"><output>70 px/s</output></label>
-          <label class="ai-control"><span>Tracking strength</span><input id="aiCutoutTracking" type="range" min="0" max="100" value="80"><output>80%</output></label>
-          <div class="ai-note">This tool stays offline. It uses a local color-guided segmentation pass plus directional tracking; no footage leaves the device.</div>
-          <button id="aiApplyCutoutBtn" class="primary-btn full">Create cutout</button>
-          <button id="aiCreateBehindTextBtn" class="secondary-btn full">Create text-behind setup</button>
-        </aside>
-      </div>
-    </div>
-  </dialog>
-
-  <div id="contextMenu" class="context-menu hidden" role="menu" aria-hidden="true">
-    <div id="contextMenuTitle" class="context-menu-title">Actions</div>
-    <div id="contextMenuItems"></div>
+      <div class="export-warning" id="exportWarning"><span>ⓘ</span><p>Export runs in real time. Keep this tab open until the file is ready. This browser build exports a composited preview via MediaRecorder; ProRes, RAW, AV1 and guaranteed hardware encoding are not assumed.</p></div>
+      <div id="exportProgressWrap" class="export-progress-wrap" hidden><div class="progress-track"><span id="exportProgressBar"></span></div><div><span id="exportProgressText">Starting render…</span><span id="exportProgressPercent">0%</span></div></div>
+      <div class="modal-actions"><button class="text-button" id="cancelExportButton">Cancel</button><button class="primary-button" id="startExportButton">Start local render <span>↗</span></button></div>
+    </section>
   </div>
 
+  <div class="modal-backdrop" id="settingsModal" hidden>
+    <section class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-toprow"><div><div class="modal-kicker">PREFERENCES / WORKSPACE</div><h1 id="settingsTitle">Settings</h1></div><button class="tiny-icon modal-close" data-close-modal="settingsModal" aria-label="Close">×</button></div>
+      <div class="settings-tabs"><button class="settings-tab active" data-settings-tab="general">General</button><button class="settings-tab" data-settings-tab="shortcuts">Keyboard</button><button class="settings-tab" data-settings-tab="ai">AI & models</button><button class="settings-tab" data-settings-tab="storage">Storage</button><button class="settings-tab" data-settings-tab="system">System</button></div>
+      <div class="settings-content" id="settingsContent"></div>
+      <div class="modal-actions"><button class="text-button" data-close-modal="settingsModal">Close</button><button class="primary-button" id="saveSettingsButton">Apply settings</button></div>
+    </section>
+  </div>
 
-  <script type="module" src="./app.js"></script>
+  <div class="modal-backdrop" id="projectModal" hidden>
+    <section class="modal project-modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <div class="modal-toprow"><div><div class="modal-kicker">PROJECT / FILE</div><h1 id="projectModalTitle">Project file</h1></div><button class="tiny-icon modal-close" data-close-modal="projectModal" aria-label="Close">×</button></div>
+      <p class="modal-lead" id="projectModalDescription">Save the editable project state as a portable JSON file.</p>
+      <div class="project-actions-list"><button id="downloadProjectButton"><span class="project-action-icon">↓</span><span><strong>Export project JSON</strong><small>Sequence, edits, markers and settings. Media files are not embedded.</small></span><span>↗</span></button><button id="openProjectButton"><span class="project-action-icon">↑</span><span><strong>Open project JSON</strong><small>Restore a previously exported Axiom project.</small></span><span>↗</span></button><input id="projectFileInput" type="file" accept=".json,application/json" hidden><button id="newProjectButton"><span class="project-action-icon">＋</span><span><strong>New project</strong><small>Start a new sequence while keeping local media in the bin.</small></span><span>↗</span></button></div>
+      <div class="modal-actions"><button class="text-button" data-close-modal="projectModal">Done</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="timelineSettingsModal" hidden>
+    <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="timelineSettingsTitle">
+      <div class="modal-toprow"><div><div class="modal-kicker">SEQUENCE / SETTINGS</div><h1 id="timelineSettingsTitle">Timeline settings</h1></div><button class="tiny-icon modal-close" data-close-modal="timelineSettingsModal" aria-label="Close">×</button></div>
+      <div class="export-grid"><label class="form-field"><span>Sequence name</span><input id="sequenceNameInput" value="Sequence 01"></label><label class="form-field"><span>Frame rate</span><select id="sequenceFpsInput"><option value="24">24 FPS</option><option value="25">25 FPS</option><option value="30" selected>30 FPS</option><option value="50">50 FPS</option><option value="60">60 FPS</option></select></label><label class="form-field"><span>Width</span><select id="sequenceWidthInput"><option value="1920">1920</option><option value="3840">3840 / UHD</option><option value="1280">1280</option><option value="1080">1080 / vertical</option></select></label><label class="form-field"><span>Height</span><select id="sequenceHeightInput"><option value="1080">1080</option><option value="2160">2160 / UHD</option><option value="720">720</option><option value="1920">1920 / vertical</option></select></label></div>
+      <div class="modal-actions"><button class="text-button" data-close-modal="timelineSettingsModal">Cancel</button><button class="primary-button" id="applySequenceSettingsButton">Apply sequence</button></div>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="storageModal" hidden>
+    <section class="modal small-modal" role="dialog" aria-modal="true" aria-labelledby="storageModalTitle">
+      <div class="modal-toprow"><div><div class="modal-kicker">LOCAL DATA / CACHE</div><h1 id="storageModalTitle">Storage details</h1></div><button class="tiny-icon modal-close" data-close-modal="storageModal" aria-label="Close">×</button></div>
+      <div id="storageDetailsContent" class="storage-details-content"></div>
+      <div class="modal-actions"><button class="text-button" data-close-modal="storageModal">Close</button><button id="purgeCacheButton" class="secondary-button">Clear generated cache</button></div>
+    </section>
+  </div>
+
+  <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
